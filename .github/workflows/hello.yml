@@ -1,6 +1,6 @@
 name: github-actions
 on: [push]
 jobs:
-  runs-on: self-hosted
+  runs-on: ubuntu-latest
   steps:
     - run: echo "Hello world"
