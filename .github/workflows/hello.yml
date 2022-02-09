@@ -1,6 +1,7 @@
 name: github-actions
 on: [push]
 jobs:
-  runs-on: ubuntu-latest
-  steps:
-    - run: echo "Hello world"
+  Hello-World:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Hello world"
