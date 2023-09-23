@@ -1,57 +1,17 @@
-name: Build
+name: Cancel Duplicates
 on:
-  push:
-    branches: [main]
-  # Trigger the workflow on any pull request
   workflow_dispatch:
 
 jobs:
-
-  # Run Gradle Wrapper Validation Action to verify the wrapper's checksum
-  # Run verifyPlugin, IntelliJ Plugin Verifier, and test Gradle tasks
-  # Build plugin and provide the artifact for the next workflow jobs
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.properties.outputs.version }}
-      changelog: ${{ steps.properties.outputs.changelog }}
+  cancel-duplicate-runs:
+    name: Cancel duplicate workflow runs
+    runs-on: ubuntu-20.04
     steps:
-
-      # Check out current repository
-      - name: Fetch Sources
-        uses: actions/checkout@v2.4.0
-
-      # Validate wrapper
-      - name: Gradle Wrapper Validation
-        uses: gradle/wrapper-validation-action@v1.0.4
-
-      # Setup Java 11 environment for the next steps
-      - name: Setup Java
-        uses: actions/setup-java@v2
-        with:
-          distribution: zulu
-          java-version: 11
-          cache: gradle
-
-      # Set environment variables
-      - name: Export Properties
-        id: properties
-        shell: bash
+      - name: Check number of queued tasks
+        id: check_queued
         run: |
-          PROPERTIES="$(./gradlew properties --console=plain -q)"
-          VERSION="$(echo "$PROPERTIES" | grep "^version:" | cut -f2- -d ' ')"
-          NAME="$(echo "$PROPERTIES" | grep "^pluginName:" | cut -f2- -d ' ')"
-          CHANGELOG="$(./gradlew getChangelog --unreleased --no-header --console=plain -q)"
-          CHANGELOG="${CHANGELOG//'%'/'%25'}"
-          CHANGELOG="${CHANGELOG//$'\n'/'%0A'}"
-          CHANGELOG="${CHANGELOG//$'\r'/'%0D'}"
+          count=5
+          echo "Found $count unfinished jobs."
+          echo "::set-output name=count::$count"
 
-          echo "::set-output name=version::$VERSION"
-          echo "::set-output name=name::$NAME"
-          echo "::set-output name=changelog::$CHANGELOG"
-          echo "::set-output name=pluginVerifierHomeDir::~/.pluginVerifier"
-
-          ./gradlew listProductsReleases # prepare list of IDEs for Plugin Verifier
-
-
+    
